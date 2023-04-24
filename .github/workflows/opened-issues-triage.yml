@@ -18,7 +18,7 @@ jobs:
         uses: aidan-mundy/react-to-issue@v1.1.1
         with:
           issue-number: ${{ github.event.issue.number }}
-          reactions: +1
+          reactions: '+1'
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v3
         with:
@@ -32,6 +32,6 @@ jobs:
 
             Don’t forget to upvote the top comment with 👍!
       - name: Close Issue
-        run: gh issue close --comment "Auto-closing issue" "1"
+        run: gh issue close --comment "Auto-closing issue" "${{ github.event.issue.number }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
