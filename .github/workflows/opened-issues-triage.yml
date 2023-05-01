@@ -2,13 +2,11 @@ name: Close feature requests with automated message
 
 on:
   issues:
-    types:
-      - opened
-      - labeled
+    types: [labeled]
 
 jobs:
   needs-votes:
-    if: contains(github.event.issue.labels.*.name, 'feature')
+    if: ${{ github.event.label.name == 'feature' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
