@@ -5,8 +5,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'packages/desktop-client/**'
-      - 'packages/desktop-electron/e2e/**'
+      - 'packages/**'
       - '.github/workflows/vrt-update-generate.yml'
 
 permissions:
