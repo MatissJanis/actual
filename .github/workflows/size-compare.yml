@@ -102,12 +102,34 @@ jobs:
 
       - name: Strip content hashes from stats files
         run: |
-          sed -i -E 's/index\.[0-9a-zA-Z_-]{8,}\./index./g' ./head/web-stats.json
-          sed -i -E 's/\.[0-9a-zA-Z_-]{8,}\.chunk\././g' ./head/web-stats.json
-          sed -i -E 's/\.[0-9a-f]{8,}\././g' ./head/*.json
-          sed -i -E 's/index\.[0-9a-zA-Z_-]{8,}\./index./g' ./base/web-stats.json
-          sed -i -E 's/\.[0-9a-zA-Z_-]{8,}\.chunk\././g' ./base/web-stats.json
-          sed -i -E 's/\.[0-9a-f]{8,}\././g' ./base/*.json
+          if [ -f ./head/web-stats.json ]; then
+            sed -i -E 's/index\.[0-9a-zA-Z_-]{8,}\./index./g' ./head/web-stats.json
+            sed -i -E 's/\.[0-9a-zA-Z_-]{8,}\.chunk\././g' ./head/web-stats.json
+          fi
+          if [ -f ./base/web-stats.json ]; then
+            sed -i -E 's/index\.[0-9a-zA-Z_-]{8,}\./index./g' ./base/web-stats.json
+            sed -i -E 's/\.[0-9a-zA-Z_-]{8,}\.chunk\././g' ./base/web-stats.json
+          fi
+          for file in ./head/*.json ./base/*.json; do
+            if [ -f "$file" ]; then
+              sed -i -E 's/\.[0-9a-f]{8,}\././g' "$file"
+            fi
+          done
+      - name: Verify stats files exist
+        run: |
+          echo "=== Base directory structure ==="
+          find ./base -name "*.json" -type f | sort || true
+          echo ""
+          echo "=== Head directory structure ==="
+          find ./head -name "*.json" -type f | sort || true
+          echo ""
+          echo "=== Checking required files ==="
+          test -f ./base/web-stats.json && echo "✓ ./base/web-stats.json exists" || echo "✗ ./base/web-stats.json MISSING"
+          test -f ./base/loot-core-stats.json && echo "✓ ./base/loot-core-stats.json exists" || echo "✗ ./base/loot-core-stats.json MISSING"
+          test -f ./base/api-stats.json && echo "✓ ./base/api-stats.json exists" || echo "✗ ./base/api-stats.json MISSING"
+          test -f ./head/web-stats.json && echo "✓ ./head/web-stats.json exists" || echo "✗ ./head/web-stats.json MISSING"
+          test -f ./head/loot-core-stats.json && echo "✓ ./head/loot-core-stats.json exists" || echo "✗ ./head/loot-core-stats.json MISSING"
+          test -f ./head/api-stats.json && echo "✓ ./head/api-stats.json exists" || echo "✗ ./head/api-stats.json MISSING"
       - name: Generate combined bundle stats comment
         run: |
           node packages/ci-actions/bin/bundle-stats-comment.mjs \
