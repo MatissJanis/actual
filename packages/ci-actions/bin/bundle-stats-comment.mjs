@@ -175,14 +175,21 @@ async function loadStats(filePath) {
   try {
     const absolutePath = path.resolve(process.cwd(), filePath);
     const fileContents = await readFile(absolutePath, 'utf8');
-    return JSON.parse(fileContents);
+    const parsed = JSON.parse(fileContents);
+
+    // Validate that we got a meaningful stats object
+    if (!parsed || typeof parsed !== 'object') {
+      throw new Error('Stats file does not contain a valid JSON object');
+    }
+
+    return parsed;
   } catch (error) {
     const message =
       error instanceof Error
         ? error.message
         : 'Unknown error while parsing stats file';
-    console.warn(`[bundle-stats] Failed to parse "${filePath}": ${message}`);
-    return {};
+    console.error(`[bundle-stats] Failed to parse "${filePath}": ${message}`);
+    throw new Error(`Failed to load stats file "${filePath}": ${message}`);
   }
 }
 
@@ -608,13 +615,27 @@ async function main() {
   const sections = [];
 
   for (const section of args.sections) {
+    console.error(`[bundle-stats] Processing section: ${section.name}`);
+    console.error(
+      `[bundle-stats] Loading base stats from: ${section.basePath}`,
+    );
     const baseStats = await loadStats(section.basePath);
+    console.error(
+      `[bundle-stats] Loading head stats from: ${section.headPath}`,
+    );
     const headStats = await loadStats(section.headPath);
+
+    const statsDiff = getStatsDiff(baseStats, headStats);
+    const chunkDiff = getChunkModuleDiff(baseStats, headStats);
+
+    console.error(
+      `[bundle-stats] Section ${section.name}: ${statsDiff.total.name} files, total size ${statsDiff.total.old.size} → ${statsDiff.total.new.size}`,
+    );
 
     sections.push({
       name: section.name,
-      statsDiff: getStatsDiff(baseStats, headStats),
-      chunkDiff: getChunkModuleDiff(baseStats, headStats),
+      statsDiff,
+      chunkDiff,
     });
   }
 
