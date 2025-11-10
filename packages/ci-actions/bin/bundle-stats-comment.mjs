@@ -37,7 +37,13 @@ function parseRawArgs(argv) {
       throw new Error(`Missing value for argument "${key}".`);
     }
 
-    args.set(key.slice(2), values);
+    const keyName = key.slice(2);
+    // Accumulate values if the key already exists
+    if (args.has(keyName)) {
+      args.set(keyName, [...args.get(keyName), ...values]);
+    } else {
+      args.set(keyName, values);
+    }
   }
 
   return args;
@@ -611,6 +617,15 @@ function renderSection(title, statsDiff, chunkModuleDiff) {
 
 async function main() {
   const args = parseArgs(process.argv);
+
+  console.error(
+    `[bundle-stats] Found ${args.sections.length} sections to process`,
+  );
+  args.sections.forEach((section, index) => {
+    console.error(
+      `[bundle-stats] Section ${index + 1}: ${section.name} (base: ${section.basePath}, head: ${section.headPath})`,
+    );
+  });
 
   const sections = [];
 
