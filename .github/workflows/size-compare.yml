@@ -73,32 +73,42 @@ jobs:
           echo "Build failed on PR branch or ${{github.base_ref}}"
           exit 1
 
-      - name: Download build stats from base branch
+      - name: Download web build artifact from ${{github.base_ref}}
         uses: dawidd6/action-download-artifact@v11
+        id: pr-web-build
         with:
-          branch: ${{ github.base_ref }}
+          branch: ${{github.base_ref}}
           workflow: build.yml
-          workflow_conclusion: ''
+          workflow_conclusion: '' # ignore the conclusion of the workflow, since we already checked it
           name: build-stats
           path: base
-      - name: Download API stats from base branch
+      - name: Download API build artifact from ${{github.base_ref}}
         uses: dawidd6/action-download-artifact@v11
+        id: pr-api-build
         with:
-          branch: ${{ github.base_ref }}
+          branch: ${{github.base_ref}}
           workflow: build.yml
-          workflow_conclusion: ''
+          workflow_conclusion: '' # ignore the conclusion of the workflow, since we already checked it
           name: api-build-stats
           path: base/api-stats
       - name: Download build stats from PR
-        uses: actions/download-artifact@v5
+        uses: dawidd6/action-download-artifact@v11
         with:
+          pr: ${{github.event.pull_request.number}}
+          workflow: build.yml
+          workflow_conclusion: '' # ignore the conclusion of the workflow, since we already checked it
           name: build-stats
           path: head
+          allow_forks: true
       - name: Download API stats from PR
-        uses: actions/download-artifact@v5
+        uses: dawidd6/action-dqownload-artifact@v11
         with:
-          name: api-build-stats
-          path: head/api-stats
+          pr: ${{github.event.pull_request.number}}
+          workflow: build.yml
+          workflow_conclusion: '' # ignore the conclusion of the workflow, since we already checked it
+          name: api-stats
+          path: head
+          allow_forks: true
       - name: Prepare stats files
         run: |
           cp ./base/api-stats/api-stats.json ./base/api-stats.json
