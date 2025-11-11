@@ -3,6 +3,8 @@ import '@playwright/test';
 // Allow images to be imported
 declare module '*.png';
 
+
+
 declare global {
   function __resetWorld(): void;
 
