@@ -12,6 +12,10 @@ on:
     branches:
       - master
   pull_request:
+  pull_request_target:
+    paths:
+      - 'packages/**'
+      - '!packages/sync-server/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -22,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - name: Set up environment
         uses: ./.github/actions/setup
         with:
@@ -47,6 +53,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - name: Set up environment
         uses: ./.github/actions/setup
         with:
@@ -65,6 +73,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - name: Set up environment
         uses: ./.github/actions/setup
       - name: Build Web
@@ -84,6 +94,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - name: Set up environment
         uses: ./.github/actions/setup
         with:
@@ -96,12 +108,19 @@ jobs:
           name: sync-server
           path: packages/sync-server/build
 
+  # Security note: This job uses pull_request_target to run in the base repo context,
+  # which is necessary to post comments on PRs. It's safe because:
+  # 1. We checkout the base branch (not PR code)
+  # 2. We only download artifacts (data, not executable code)
+  # 3. Scripts run from the base branch (trusted code)
+  # 4. We use explicit minimal permissions
   compare-sizes:
     runs-on: ubuntu-latest
     needs: [api, crdt, web]
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request_target'
     permissions:
       pull-requests: write
+      contents: read
     steps:
       - name: Checkout base branch
         uses: actions/checkout@v5
@@ -128,16 +147,24 @@ jobs:
           name: api-build-stats
           path: base/api-stats
       - name: Download build stats from PR
-        uses: actions/download-artifact@v5
+        uses: dawidd6/action-download-artifact@v11
         with:
+          pr: ${{ github.event.pull_request.number }}
+          workflow: build.yml
+          workflow_conclusion: ''
           name: build-stats
           path: head
+          allow_forks: true
       - name: Download API stats from PR
-        uses: actions/download-artifact@v5
+        uses: dawidd6/action-download-artifact@v11
         with:
+          pr: ${{ github.event.pull_request.number }}
+          workflow: build.yml
+          workflow_conclusion: ''
           name: api-build-stats
           path: head/api-stats
-      - name: Prepare API stats files
+          allow_forks: true
+      - name: Prepare stats files
         run: |
           cp ./base/api-stats/api-stats.json ./base/api-stats.json
           cp ./head/api-stats/api-stats.json ./head/api-stats.json
