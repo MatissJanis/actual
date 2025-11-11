@@ -6,8 +6,6 @@ E2E (end-to-end) tests use [Playwright](https://playwright.dev/). Running them r
 
 ### Functional
 
-
-
 Running against the local server:
 
 ```sh
