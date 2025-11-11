@@ -90,7 +90,7 @@ jobs:
           workflow: build.yml
           workflow_conclusion: '' # ignore the conclusion of the workflow, since we already checked it
           name: api-build-stats
-          path: base/api-stats
+          path: base
       - name: Download build stats from PR
         uses: dawidd6/action-download-artifact@v11
         with:
@@ -106,13 +106,9 @@ jobs:
           pr: ${{github.event.pull_request.number}}
           workflow: build.yml
           workflow_conclusion: '' # ignore the conclusion of the workflow, since we already checked it
-          name: api-stats
+          name: api-build-stats
           path: head
           allow_forks: true
-      - name: Prepare stats files
-        run: |
-          cp ./base/api-stats/api-stats.json ./base/api-stats.json
-          cp ./head/api-stats/api-stats.json ./head/api-stats.json
       - name: Strip content hashes from stats files
         run: |
           if [ -f ./head/web-stats.json ]; then
