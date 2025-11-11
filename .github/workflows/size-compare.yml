@@ -101,7 +101,7 @@ jobs:
           path: head
           allow_forks: true
       - name: Download API stats from PR
-        uses: dawidd6/action-dqownload-artifact@v11
+        uses: dawidd6/action-download-artifact@v11
         with:
           pr: ${{github.event.pull_request.number}}
           workflow: build.yml
