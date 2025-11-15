@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 22
       - name: Assign maintainer
-        run: node .github/actions/pr-auto-assign/assign-maintainer.js
+        run: node .github/scripts/assign-maintainer.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
